@@ -1,0 +1,66 @@
+name: Build TvOS IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Install Dependencies
+      run: |
+        # Install Bundler and CocoaPods
+        gem install bundler
+        gem install cocoapods
+
+        # Navigate to the root directory
+        cd Movie4K
+
+        # Install CocoaPods dependencies
+        bundle install
+        bundle exec pod repo update
+        bundle exec pod install
+
+    - name: Clean Build Artifacts
+      run: rm -rf ~/Library/Developer/Xcode/DerivedData
+
+    - name: Build TvOS App
+      run: |
+        cd Movie4K/movie4k.xcodeproj
+        set -o pipefail && xcodebuild archive \
+        -workspace movie4k.xcworkspace \
+        -scheme movie4k \
+        -sdk appletvos \
+        -configuration Debug \
+        -destination 'generic/platform=tvOS' \
+        clean build CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO \
+        | tee build.log | xcpretty || (echo "Build failed. Check build.log for details." && exit 1)
+
+    - name: Generate Unsigned IPA
+      if: success()
+      run: |
+        cd ~/Library/Developer/Xcode/Archives
+        mkdir Payload
+        mv */*/Products/Applications/*.app Payload/
+        zip -r Movie4K.ipa Payload
+
+    - name: Upload IPA
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'Movie4K-IPA'
+        path: ~/Library/Developer/Xcode/Archives/Movie4K.ipa
+
+    - name: Upload Build Log on Failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'build-log'
+        path: build.log
+        if-no-files-found: warn
