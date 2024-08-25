@@ -13,30 +13,6 @@ jobs:
       with:
         submodules: true
 
-    - name: Setup Gemfile
-      run: |
-        # Navigate to the root directory
-        cd Movie4K
-
-        # Create Gemfile with necessary gems
-        echo "source 'https://rubygems.org'" > Gemfile
-        echo "gem 'bundler', '~> 2.0.1'" >> Gemfile
-        echo "gem 'cocoapods', '~> 1.8.3'" >> Gemfile
-        echo "gem 'swiftyjson'" >> Gemfile
-        echo "gem 'alamofire'" >> Gemfile
-        echo "gem 'htmlreader'" >> Gemfile
-        echo "gem 'cosmos'" >> Gemfile
-        echo "gem 'marqueelabel-swift'" >> Gemfile
-        echo "gem 'svprogresshud'" >> Gemfile
-        echo "gem 'promisekit'" >> Gemfile
-
-        # Install Bundler and Dependencies
-        gem install bundler -v 2.0.1
-        bundle install
-
-        # Install CocoaPods dependencies
-        bundle exec pod repo update
-        bundle exec pod install
 
     - name: Clean Build Artifacts
       run: rm -rf ~/Library/Developer/Xcode/DerivedData
