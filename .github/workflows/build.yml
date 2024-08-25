@@ -13,6 +13,17 @@ jobs:
       with:
         submodules: true
 
+    - name: Setup CocoaPods
+      run: |
+        # Navigate to the root directory
+        cd Movie4K
+
+        # Install CocoaPods
+        gem install cocoapods -v 1.8.3
+
+        # Initialize CocoaPods
+        pod repo update
+        pod install
 
     - name: Clean Build Artifacts
       run: rm -rf ~/Library/Developer/Xcode/DerivedData
