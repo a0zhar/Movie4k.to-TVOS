@@ -21,7 +21,33 @@ jobs:
         # Install CocoaPods
         gem install cocoapods -v 1.8.3
 
-        # Install dependencies specified in Podfile
+        # Create a new Podfile with Swift version set
+        cat <<EOF > Podfile
+        platform :tvos, '9.2'
+        use_frameworks!
+        
+        target 'Movie4K' do
+          swift_version = '5.7'
+          
+          pod 'SwiftyJSON', '2.3.2'
+          pod 'Alamofire', '3.4.0'
+          pod 'HTMLReader', '0.9.6'
+          pod 'Cosmos', '1.2.2'
+          pod 'MarqueeLabel/Swift', '2.7.4'
+          pod 'SVProgressHUD', :git => 'https://github.com/SVProgressHUD/SVProgressHUD.git'
+          pod 'PromiseKit', '3.2.0'
+          
+          post_install do |installer|
+            installer.pods_project.targets.each do |target|
+              target.build_configurations.each do |config|
+                config.build_settings['SWIFT_VERSION'] = swift_version
+              end
+            end
+          end
+        end
+        EOF
+
+        # Install dependencies
         pod install
 
     - name: Clean Build Artifacts
